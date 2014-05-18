@@ -1,5 +1,6 @@
 package pl.praca.testchecker;
 // testtt
+// to jest linijka z branchu proba
 import pl.praca.testchecker.util.*;
 import android.app.Activity;
 import android.os.Bundle;
