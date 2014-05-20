@@ -6,6 +6,7 @@ import java.util.List;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Configuration;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.os.Build;
@@ -88,9 +89,15 @@ public class CameraPreview extends SurfaceView
         	Toast.makeText(getContext(), "Can't open camera!", Toast.LENGTH_LONG).show();
         	return;
         }
-        Camera.Parameters cameraParams = mCamera.getParameters();
-        mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
-        mPictureSizeList = cameraParams.getSupportedPictureSizes();
+
+        Camera.Parameters params = mCamera.getParameters();
+		params.setSceneMode(Camera.Parameters.SCENE_MODE_BARCODE);
+		params.setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO);
+		params.setPreviewFormat(ImageFormat.YV12);
+		mCamera.setParameters(params);
+
+        mPreviewSizeList = params.getSupportedPreviewSizes();
+        mPictureSizeList = params.getSupportedPictureSizes();
         
         int currentapiVersion = android.os.Build.VERSION.SDK_INT;
         if (currentapiVersion >= android.os.Build.VERSION_CODES.JELLY_BEAN){
@@ -119,6 +126,8 @@ public class CameraPreview extends SurfaceView
         doSurfaceChanged(width, height);
         mSurfaceChangedCallDepth--;
     }
+
+    byte[] callbackBuffer;
 
     private void doSurfaceChanged(int width, int height) {
         mCamera.stopPreview();
@@ -149,6 +158,21 @@ public class CameraPreview extends SurfaceView
         configureCameraParameters(cameraParams, portrait);
         mSurfaceConfiguring = false;
 
+        Camera.Parameters params = mCamera.getParameters();
+        Camera.Size size = params.getPreviewSize();
+        int sizeInBytes = size.width * size.height * ImageFormat.getBitsPerPixel(params.getPreviewFormat());
+
+        callbackBuffer = new byte[sizeInBytes];
+        System.gc();
+        
+        mCamera.addCallbackBuffer(callbackBuffer);
+        mCamera.setPreviewCallbackWithBuffer(new Camera.PreviewCallback() {
+			@Override
+			public void onPreviewFrame(byte[] data, Camera camera) {
+				processFrame(data, camera);
+			}
+		});
+
         try {
             mCamera.startPreview();
         } catch (Exception e) {
@@ -170,6 +194,16 @@ public class CameraPreview extends SurfaceView
         if (null != mPreviewReadyCallback) {
             mPreviewReadyCallback.onPreviewReady();
         }
+    }
+    
+    private void processFrame(byte[] data, Camera camera) {
+    	int count = 0;
+    	for(int i = 0; i < data.length; i ++) {
+  			count += data[i];    			
+    	}
+    	
+    	camera.addCallbackBuffer(data);
+    	Log.v("CAMERA", String.valueOf(count));
     }
     
     /**

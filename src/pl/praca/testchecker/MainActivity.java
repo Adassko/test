@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ImageFormat;
 import android.graphics.Paint;
 import android.hardware.Camera;
 import android.os.Build;
@@ -70,12 +71,6 @@ public class MainActivity extends Activity {
         // Un-comment below line to specify the position.
         //mPreview.setCenterPosition(270, 130);
         
-        Camera.Parameters params = mPreview.getCamera().getParameters();
-		params.setSceneMode(Camera.Parameters.SCENE_MODE_BARCODE);
-		params.setFocusMode(Camera.Parameters.FOCUS_MODE_MACRO);
-		stabilize(params);
-		mPreview.getCamera().setParameters(params);
-    
         mLayout.addView(mPreview, 0, previewLayoutParams);
     }
     
