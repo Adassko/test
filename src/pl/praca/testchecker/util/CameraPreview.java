@@ -82,6 +82,12 @@ public class CameraPreview extends SurfaceView
         } else {
             mCamera = Camera.open();
         }
+        
+        if (mCamera == null)
+        {
+        	Toast.makeText(getContext(), "Can't open camera!", Toast.LENGTH_LONG).show();
+        	return;
+        }
         Camera.Parameters cameraParams = mCamera.getParameters();
         mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
         mPictureSizeList = cameraParams.getSupportedPictureSizes();
